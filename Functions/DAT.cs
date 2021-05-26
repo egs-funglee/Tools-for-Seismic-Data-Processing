@@ -70,6 +70,5 @@ namespace CNV2RXY
                 return string.Format("{0} {1,15:0.00} {2,15:0.00} {3,7:0} {4,7:0} {5,15}", linename, x, y, sp, tr, tt);
             }
         }
-
     }
 }
