@@ -41,6 +41,7 @@ namespace CNV2RXY
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.textBox1 = new System.Windows.Forms.TextBox();
+            this.checkBox2 = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.SuspendLayout();
@@ -86,6 +87,7 @@ namespace CNV2RXY
             // 
             this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox2.Controls.Add(this.checkBox2);
             this.groupBox2.Controls.Add(this.checkBox1);
             this.groupBox2.Controls.Add(this.radioButton4);
             this.groupBox2.Controls.Add(this.radioButton3);
@@ -189,6 +191,18 @@ namespace CNV2RXY
             this.textBox1.Size = new System.Drawing.Size(595, 411);
             this.textBox1.TabIndex = 999;
             // 
+            // checkBox2
+            // 
+            this.checkBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.checkBox2.AutoSize = true;
+            this.checkBox2.Location = new System.Drawing.Point(297, 69);
+            this.checkBox2.Name = "checkBox2";
+            this.checkBox2.Size = new System.Drawing.Size(145, 17);
+            this.checkBox2.TabIndex = 1001;
+            this.checkBox2.Text = "Replace text in extension";
+            this.checkBox2.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             this.AllowDrop = true;
@@ -200,6 +214,7 @@ namespace CNV2RXY
             this.Controls.Add(this.textBox1);
             this.Name = "Form1";
             this.Text = "Tools for Seismic Data Processing (OpendTect and C-View Processing)";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.DragDrop += new System.Windows.Forms.DragEventHandler(this.Form1_DragDrop);
             this.DragEnter += new System.Windows.Forms.DragEventHandler(this.Form1_DragEnter);
             this.groupBox1.ResumeLayout(false);
@@ -224,6 +239,7 @@ namespace CNV2RXY
         private System.Windows.Forms.CheckBox checkBox1;
         private System.Windows.Forms.RadioButton radioButton4;
         private System.Windows.Forms.RadioButton radioButton3;
+        private System.Windows.Forms.CheckBox checkBox2;
     }
 }
 

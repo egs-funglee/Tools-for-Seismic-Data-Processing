@@ -6,15 +6,32 @@ using static CNV2RXY.DAT;
 using static CNV2RXY.RXY;
 using static CNV2RXY.RXYZ;
 using static CNV2RXY.REF;
+using static CNV2RXY.INI;
 
 namespace CNV2RXY
 {
     public partial class Form1 : Form
     {
         int mode = 0;
+        private readonly IniParser.Model.IniData ini;
         public Form1()
         {
             InitializeComponent();
+            ini = Read_ini();
+            string string_mode = ini["Software"]["Mode"];
+            string string_search = ini["Search and Replace History"]["Search"];
+            string string_replace = ini["Search and Replace History"]["Replace"];
+            string string_move_or_copy = ini["Search and Replace History"]["Move/Copy"];
+            string string_overwrite = ini["Search and Replace History"]["Overwrite"];
+            string string_replace_ext = ini["Search and Replace History"]["Replace_Ext"];
+
+            if (string_mode == "Rename") radioButton2.Checked = true;
+            if (string_search != null) textBox2.Text = string_search;
+            if (string_replace != null) textBox3.Text = string_replace;
+            if (string_move_or_copy == "Copy") radioButton4.Checked = true;
+            if (string_overwrite == "Yes") checkBox1.Checked = true;
+            if (string_replace_ext == "Yes") checkBox2.Checked = true;
+
             Reset_TB1();
         }
 
@@ -47,7 +64,7 @@ namespace CNV2RXY
                     + "Extract the Trace# Easting and Northing to RXY file for CBG update" + Environment.NewLine + Environment.NewLine
 
                     + "REF+RXYZ (2 file)" + Environment.NewLine
-                    + "Update H0 in REF with Updated RXYZ (RXY originated from REF)" + Environment.NewLine                    
+                    + "Update H0 in REF with Updated RXYZ (RXY originated from REF)" + Environment.NewLine
 
                     + Environment.NewLine + Environment.NewLine + Environment.NewLine
                     + "v20210526";
@@ -133,12 +150,23 @@ namespace CNV2RXY
             string path = System.IO.Path.GetDirectoryName(files[0]) + "\\";
             bool overwrite = checkBox1.Checked;
             bool movefile = radioButton3.Checked;
+            bool replace_ext = checkBox2.Checked;
             foreach (string file in filelist)
             {
                 if (System.IO.File.Exists(file)) //check source exists
                 {
-                    string newfn = System.IO.Path.GetFileName(file).Replace(findwhat, replacewith);
-                    textBox1.AppendText(file + " -> " + newfn);
+                    string newfn;
+
+                    if (replace_ext) {
+                        newfn = System.IO.Path.GetFileName(file).Replace(findwhat, replacewith);
+                    }
+                    else
+                    {
+                        newfn = System.IO.Path.GetFileNameWithoutExtension(file).Replace(findwhat, replacewith) +
+                            System.IO.Path.GetExtension(file);                        
+                    }
+
+                    textBox1.AppendText(file + " ===>>> " + newfn);
                     newfn = path + newfn;
                     if (newfn != file)
                         if (movefile)
@@ -149,17 +177,17 @@ namespace CNV2RXY
                                 {
                                     System.IO.File.Delete(newfn);
                                     System.IO.File.Move(file, newfn);
-                                    textBox1.AppendText(" - Moved (Overwritten)" + Environment.NewLine);
+                                    textBox1.AppendText(" === Moved (Overwritten)" + Environment.NewLine);
                                 }
                                 else
                                 {
-                                    textBox1.AppendText(" - Target exists, not moved" + Environment.NewLine);
+                                    textBox1.AppendText(" === Target exists, not moved" + Environment.NewLine);
                                 }
                             }
                             else
                             {
                                 System.IO.File.Move(file, newfn);
-                                textBox1.AppendText(" - Moved" + Environment.NewLine);
+                                textBox1.AppendText(" === Moved" + Environment.NewLine);
                             }
                         }
                         else //copy file
@@ -170,23 +198,23 @@ namespace CNV2RXY
                                 {
                                     System.IO.File.Delete(newfn);
                                     System.IO.File.Copy(file, newfn);
-                                    textBox1.AppendText(" - Copied (Overwritten)" + Environment.NewLine);
+                                    textBox1.AppendText(" === Copied (Overwritten)" + Environment.NewLine);
                                 }
                                 else
                                 {
-                                    textBox1.AppendText(" - Target exists, not copied" + Environment.NewLine);
+                                    textBox1.AppendText(" === Target exists, not copied" + Environment.NewLine);
                                 }
                             }
                             else
                             {
                                 System.IO.File.Copy(file, newfn);
-                                textBox1.AppendText(" - Copied" + Environment.NewLine);
+                                textBox1.AppendText(" === Copied" + Environment.NewLine);
                             }
                         }
                     else
-                        textBox1.AppendText(" - File name unchanged" + Environment.NewLine);
+                        textBox1.AppendText(" === File name unchanged" + Environment.NewLine);
                 }
-                else textBox1.AppendText(file + " - File not exist" + Environment.NewLine);
+                else textBox1.AppendText(file + " === File not exist" + Environment.NewLine);
             }
         }
 
@@ -459,6 +487,35 @@ namespace CNV2RXY
             if (filelist.Count > 2)
             {
                 MessageBox.Show("Select REF (1 file) or REF+RXYZ (2 files)");
+            }
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            string snr_type = "Move";
+            string sw_mode = "Convert";
+            string overwrite = "No";
+            string replace_ext = "No";
+            if (radioButton2.Checked) sw_mode = "Rename";
+            if (radioButton4.Checked) snr_type = "Copy";
+            if (checkBox1.Checked) overwrite = "Yes";
+            if (checkBox2.Checked) replace_ext = "Yes";
+
+            if (ini["Software"]["Mode"] != sw_mode ||
+                ini["Search and Replace History"]["Search"] != textBox2.Text ||
+                ini["Search and Replace History"]["Replace"] != textBox3.Text ||
+                ini["Search and Replace History"]["Move/Copy"] != snr_type ||
+                ini["Search and Replace History"]["Overwrite"] != overwrite ||
+                ini["Search and Replace History"]["Replace_Ext"] != replace_ext)
+
+            {
+                ini["Software"]["Mode"] = sw_mode;
+                ini["Search and Replace History"]["Search"] = textBox2.Text;
+                ini["Search and Replace History"]["Replace"] = textBox3.Text;
+                ini["Search and Replace History"]["Move/Copy"] = snr_type;
+                ini["Search and Replace History"]["Overwrite"] = overwrite;
+                ini["Search and Replace History"]["Replace_Ext"] = replace_ext;
+                Save_ini(ini);
             }
         }
     }
