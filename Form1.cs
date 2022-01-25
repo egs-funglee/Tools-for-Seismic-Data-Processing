@@ -5,8 +5,8 @@ using System.Windows.Forms;
 using static CNV2RXY.DAT;
 using static CNV2RXY.RXY;
 using static CNV2RXY.RXYZ;
-using static CNV2RXY.REF;
 using static CNV2RXY.INI;
+using Microsoft.VisualBasic;
 
 namespace CNV2RXY
 {
@@ -56,23 +56,13 @@ namespace CNV2RXY
                     + "to reformat for SBP Horizon Proc.exe" + Environment.NewLine
                     + "nFix decimal and >9999 SP# exported by OpendTect v6.6" + Environment.NewLine + Environment.NewLine
 
-                    + Environment.NewLine
-                    + "C-View Bathy v1.9.1 can update H0 in REF directly" + Environment.NewLine
-                    + "Functions below were alternative method" + Environment.NewLine + Environment.NewLine
-
-                    + "REF file (1 file)" + Environment.NewLine
-                    + "Extract the Trace# Easting and Northing to RXY file for CBG update" + Environment.NewLine + Environment.NewLine
-
-                    + "REF+RXYZ (2 file)" + Environment.NewLine
-                    + "Update H0 in REF with Updated RXYZ (RXY originated from REF)" + Environment.NewLine
-
-                    + Environment.NewLine + Environment.NewLine + Environment.NewLine
-                    + "v20210526";
+                    + Environment.NewLine + Environment.NewLine
+                    + "v20211108";
             }
             else
             {
                 mode = 2;
-                textBox1.Text = "Drag in files to rename" + Environment.NewLine;
+                textBox1.Text = "Drag in files to rename" + Environment.NewLine + "V20220125" + Environment.NewLine;
                 groupBox2.Enabled = true;
             }
         }
@@ -105,12 +95,25 @@ namespace CNV2RXY
             List<string> filelist = new List<string>();
 
             //try REF
-            foreach (string file in files)
-            {
-                if (file.ToUpper().EndsWith(".REF")) filelist.Add(file);
-                if (file.ToUpper().EndsWith(".RXYZ")) filelist.Add(file);
-            }
-            if (filelist.Count > 0) { Work_on_REF(filelist); return; }
+            //bool got_REF = false;
+            //foreach (string file in files)
+            //{
+            //    if (file.ToUpper().EndsWith(".REF"))
+            //    {
+            //        filelist.Add(file);
+            //        got_REF = true;
+            //    }
+
+            //    if (file.ToUpper().EndsWith(".RXYZ")) filelist.Add(file);
+            //}
+            //if (got_REF && filelist.Count > 0)
+            //{
+            //    Work_on_REF(filelist);
+            //    return;
+            //} else
+            //{
+            //    filelist = new List<string>();
+            //}
 
             //try CNV
             foreach (string file in files)
@@ -147,23 +150,25 @@ namespace CNV2RXY
             textBox1.Text = string.Empty;
             string findwhat = textBox2.Text;
             string replacewith = textBox3.Text;
-            string path = System.IO.Path.GetDirectoryName(files[0]) + "\\";
+            string path;
             bool overwrite = checkBox1.Checked;
             bool movefile = radioButton3.Checked;
             bool replace_ext = checkBox2.Checked;
             foreach (string file in filelist)
             {
+                path = System.IO.Path.GetDirectoryName(file) + "\\";
                 if (System.IO.File.Exists(file)) //check source exists
                 {
                     string newfn;
 
-                    if (replace_ext) {
+                    if (replace_ext)
+                    {
                         newfn = System.IO.Path.GetFileName(file).Replace(findwhat, replacewith);
                     }
                     else
                     {
                         newfn = System.IO.Path.GetFileNameWithoutExtension(file).Replace(findwhat, replacewith) +
-                            System.IO.Path.GetExtension(file);                        
+                            System.IO.Path.GetExtension(file);
                     }
 
                     textBox1.AppendText(file + " ===>>> " + newfn);
@@ -276,6 +281,15 @@ namespace CNV2RXY
 
         private void Work_on_RXYZ(List<string> filelist)
         {
+            string input = Interaction.InputBox("Water Column", "Sound Velocity", "1530", -1, -1);
+            if (!int.TryParse(input, out int sv))
+            {
+                MessageBox.Show("Cannot convert to number",
+                                "Incorrect Input",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Error);
+                return;
+            }
             bool do_extrapolate = false;
 
             DialogResult dialogResult = MessageBox.Show(
@@ -330,7 +344,7 @@ namespace CNV2RXY
 
             if (mlRXYZ.Count > 0)
             {
-                System.IO.File.WriteAllLines(path + "RXYZ Combination Output.txt", List_RXYZ_to_LXYRT(ref mlRXYZ, 1530));
+                System.IO.File.WriteAllLines(path + "RXYZ Combination Output.txt", List_RXYZ_to_LXYRT(ref mlRXYZ, sv));
                 textBox1.AppendText("RXYZ Combination Output.txt OK" + Environment.NewLine);
             }
         }
@@ -382,113 +396,113 @@ namespace CNV2RXY
             }
         }
 
-        private void Work_on_REF(List<string> filelist)
-        {
-            //filelist.Sort();
-            textBox1.Text = string.Empty;
-            if (filelist.Count == 1)
-            {
-                MessageBox.Show("Convert REF to RXY");
-                foreach (string file in filelist)
-                {
-                    string output_fn = System.IO.Path.GetFileNameWithoutExtension(file) + ".rxy";
-                    textBox1.AppendText("Working on: " +
-                        System.IO.Path.GetFileName(file) +
-                        " -> " +
-                        output_fn);
+        //private void Work_on_REF(List<string> filelist)
+        //{
+        //    //filelist.Sort();
+        //    textBox1.Text = string.Empty;
+        //    if (filelist.Count == 1)
+        //    {
+        //        MessageBox.Show("Convert REF to RXY");
+        //        foreach (string file in filelist)
+        //        {
+        //            string output_fn = System.IO.Path.GetFileNameWithoutExtension(file) + ".rxy";
+        //            textBox1.AppendText("Working on: " +
+        //                System.IO.Path.GetFileName(file) +
+        //                " -> " +
+        //                output_fn);
 
-                    List<string> result = Read_REF2RXY(file);
+        //            List<string> result = Read_REF2RXY(file);
 
-                    if (result.Count > 0)
-                    {
-                        output_fn = System.IO.Path.GetDirectoryName(file) + "\\" + output_fn;
-                        System.IO.File.WriteAllLines(output_fn, result);
-                        textBox1.AppendText(" OK" + Environment.NewLine);
-                    }
-                    else
-                    {
-                        textBox1.AppendText(" Error" + Environment.NewLine);
-                    }
-                }
-                return;
-            }
+        //            if (result.Count > 0)
+        //            {
+        //                output_fn = System.IO.Path.GetDirectoryName(file) + "\\" + output_fn;
+        //                System.IO.File.WriteAllLines(output_fn, result);
+        //                textBox1.AppendText(" OK" + Environment.NewLine);
+        //            }
+        //            else
+        //            {
+        //                textBox1.AppendText(" Error" + Environment.NewLine);
+        //            }
+        //        }
+        //        return;
+        //    }
 
-            if (filelist.Count == 2) //rxyz + ref
-            {
-                byte files_are_ready = 0;
-                foreach (string file in filelist)
-                {
-                    if (file.ToUpper().EndsWith(".REF"))
-                    {
-                        files_are_ready++;
-                    }
-                    if (file.ToUpper().EndsWith(".RXYZ"))
-                    {
-                        files_are_ready++;
-                    }
-                }
-                if (files_are_ready != 2) return;
+        //    if (filelist.Count == 2) //rxyz + ref
+        //    {
+        //        byte files_are_ready = 0;
+        //        foreach (string file in filelist)
+        //        {
+        //            if (file.ToUpper().EndsWith(".REF"))
+        //            {
+        //                files_are_ready++;
+        //            }
+        //            if (file.ToUpper().EndsWith(".RXYZ"))
+        //            {
+        //                files_are_ready++;
+        //            }
+        //        }
+        //        if (files_are_ready != 2) return;
 
-                MessageBox.Show("Replace H0 in REF with RXYZ file");
+        //        MessageBox.Show("Replace H0 in REF with RXYZ file");
 
-                List<REF_LINE> REF_result = new List<REF_LINE>();
-                List<RXYZZ> RXYZ_result = new List<RXYZZ>();
-                string output_fn = "";
+        //        List<REF_LINE> REF_result = new List<REF_LINE>();
+        //        List<RXYZZ> RXYZ_result = new List<RXYZZ>();
+        //        string output_fn = "";
 
-                foreach (string file in filelist)
-                {
-                    if (file.ToUpper().EndsWith(".REF"))
-                    {
-                        REF_result = Read_REF(file);
-                        output_fn = System.IO.Path.GetFileNameWithoutExtension(file) + "_Updated.ref";
-                        textBox1.AppendText("Working on REF: " +
-                            System.IO.Path.GetFileName(file) + Environment.NewLine);
-                    }
-                    if (file.ToUpper().EndsWith(".RXYZ"))
-                    {
-                        RXYZ_result = Read_RXYZ(file);
-                        textBox1.AppendText("Reading H0 from: " + System.IO.Path.GetFileName(file) + Environment.NewLine);
-                    }
-                }
+        //        foreach (string file in filelist)
+        //        {
+        //            if (file.ToUpper().EndsWith(".REF"))
+        //            {
+        //                REF_result = Read_REF(file);
+        //                output_fn = System.IO.Path.GetFileNameWithoutExtension(file) + "_Updated.ref";
+        //                textBox1.AppendText("Working on REF: " +
+        //                    System.IO.Path.GetFileName(file) + Environment.NewLine);
+        //            }
+        //            if (file.ToUpper().EndsWith(".RXYZ"))
+        //            {
+        //                RXYZ_result = Read_RXYZ(file);
+        //                textBox1.AppendText("Reading H0 from: " + System.IO.Path.GetFileName(file) + Environment.NewLine);
+        //            }
+        //        }
 
-                if (REF_result.Count > 0 && RXYZ_result.Count > 0)
-                {
-                    if (REF_result.Count == RXYZ_result.Count) //just check if they have same total number of items
-                    {
-                        //match and update here
-                        List<string> result = new List<string>();
-                        for (int i = 0; i < REF_result.Count; i++)
-                        {
+        //        if (REF_result.Count > 0 && RXYZ_result.Count > 0)
+        //        {
+        //            if (REF_result.Count == RXYZ_result.Count) //just check if they have same total number of items
+        //            {
+        //                //match and update here
+        //                List<string> result = new List<string>();
+        //                for (int i = 0; i < REF_result.Count; i++)
+        //                {
 
-                            if (REF_result[i].x == RXYZ_result[i].x && REF_result[i].y == RXYZ_result[i].y)
-                            { REF_result[i].h0 = RXYZ_result[i].Z1(); }
-                            else
-                            { REF_result[i].h0 = "-999.0"; }
-                            result.Add(REF_result[i].ToStr());
-                        }
+        //                    if (REF_result[i].x == RXYZ_result[i].x && REF_result[i].y == RXYZ_result[i].y)
+        //                    { REF_result[i].h0 = RXYZ_result[i].Z1(); }
+        //                    else
+        //                    { REF_result[i].h0 = "-999.0"; }
+        //                    result.Add(REF_result[i].ToStr());
+        //                }
 
-                        textBox1.AppendText("--> " + output_fn + " OK" + Environment.NewLine);
-                        output_fn = System.IO.Path.GetDirectoryName(filelist[0]) + "\\" + output_fn;
-                        System.IO.File.WriteAllLines(output_fn, result);
+        //                textBox1.AppendText("--> " + output_fn + " OK" + Environment.NewLine);
+        //                output_fn = System.IO.Path.GetDirectoryName(filelist[0]) + "\\" + output_fn;
+        //                System.IO.File.WriteAllLines(output_fn, result);
 
-                    }
-                    else
-                    {
-                        textBox1.AppendText(" Error" + Environment.NewLine);
-                    }
-                }
-                else
-                {
-                    textBox1.AppendText(" Error" + Environment.NewLine);
-                }
-                return;
-            }
+        //            }
+        //            else
+        //            {
+        //                textBox1.AppendText(" Error" + Environment.NewLine);
+        //            }
+        //        }
+        //        else
+        //        {
+        //            textBox1.AppendText(" Error" + Environment.NewLine);
+        //        }
+        //        return;
+        //    }
 
-            if (filelist.Count > 2)
-            {
-                MessageBox.Show("Select REF (1 file) or REF+RXYZ (2 files)");
-            }
-        }
+        //    if (filelist.Count > 2)
+        //    {
+        //        MessageBox.Show("Select REF (1 file) or REF+RXYZ (2 files)");
+        //    }
+        //}
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
