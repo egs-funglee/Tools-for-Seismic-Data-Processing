@@ -27,7 +27,8 @@ namespace CNV2RXY
                             tr = (int)Math.Round(double.Parse(ele[4]), 0, MidpointRounding.AwayFromZero),
                             t = double.Parse(ele[5])
                         };
-                        result.Add(tDATL.ToStr());
+                        if (tDATL.t > 0 && tDATL.t < 9999)
+                            result.Add(tDATL.ToStr());
                     }
                     else if (ele.Length == 5)
                     {
@@ -67,7 +68,7 @@ namespace CNV2RXY
             {
                 string tt = "1e30";
                 if (t > 0 && t < 9999) tt = string.Format("{0:0.0000}", t);
-                return string.Format("{0} {1,15:0.00} {2,15:0.00} {3,7:0} {4,7:0} {5,15}", linename, x, y, sp, tr, tt);
+                return string.Format("{0,18} {1,11:0.00} {2,11:0.00} {3,9:0} {4,9:0} {5,9}", linename, x, y, sp, tr, tt);
             }
         }
     }

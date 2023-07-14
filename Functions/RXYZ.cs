@@ -171,7 +171,7 @@ namespace CNV2RXY
             }
             public string T(int vel)
             {
-                double twt = zz / vel * 1000 * 2;
+                double twt = zz / vel * 2000;
                 return twt.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
             }
             public string Z1()
